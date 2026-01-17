@@ -11,8 +11,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.aiub_buddy.data.database.AppDatabase
+import com.example.aiub_buddy.data.entity.RoutineEntity
+import com.example.aiub_buddy.data.entity.StudentEntity
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
 
@@ -50,6 +54,7 @@ class MainActivity : AppCompatActivity() {
                 .addOnSuccessListener { snapshot ->
 
                     var flag = false
+                    var logged_in_student : DataSnapshot?=null
 
                     for (student_data in snapshot.children) {
                         val email = student_data.child("email").getValue(String::class.java)
@@ -62,19 +67,73 @@ class MainActivity : AppCompatActivity() {
 
                         if (user_name.text.toString() == email && user_password.text.toString() == password) {
                             flag = true;
+                            logged_in_student = student_data;
                             break;
                         }
 
                     }
 
-                    if (flag) {
+                    if (logged_in_student!=null) {
+
+                        val email = logged_in_student.child("email").getValue(String::class.java)
+                        val firstName = logged_in_student.child("first_name").getValue(String::class.java)
+                        val lastName = logged_in_student.child("last_name").getValue(String::class.java)
+                        val profileImg = logged_in_student.child("profile_img").getValue(String::class.java)
+                        val  student_id = logged_in_student.child("student_id").getValue(String::class.java)
 
 
 
+
+
+
+                         val db = AppDatabase.getDatabase(this)
+                        val student_entity = StudentEntity(
+                            studentId = student_id!!,
+                            email = email!!,
+                            firstName = firstName!!,
+                            lastName = lastName!!,
+                            profileImg = profileImg
+                        )
+
+                        db.studentDao().insertStudent(student_entity)
+
+
+                        db.routineDao().deleteAll()
+
+//                        val routines = AppDatabase.getDatabase(this)
+//                            .routineDao()
+//                            .getAllRoutine()
+
+//                       val  user = AppDatabase.getDatabase(this)
+//                           .studentDao()
+//                           .getLoggedInStudent()
+//
+//                        Toast.makeText(this,"User : ${user?.firstName} ${user?.lastName} \n ID : ${user?.studentId}",Toast.LENGTH_SHORT).show()
+
+                        val routine_snap = logged_in_student.child("routine")
+                        for(routine_data in routine_snap.children){
+                            val subject_id = routine_data.child("subject_id").getValue(String::class.java)
+                            val subject = routine_data.child("subject_name").getValue(String::class.java)
+                            val day = routine_data.child("day").getValue(String::class.java)
+                            val time = routine_data.child("time").getValue(String::class.java)
+                            val room = routine_data.child("room").getValue(String::class.java)
+                            //Toast.makeText(this,"Subject : $subject \n Day : $day \n Time : $time \n Room : $room",Toast.LENGTH_SHORT).show()
+
+                            val routineEntity = RoutineEntity(
+                                subject_id = subject_id!!,
+                                subject = subject!!,
+                                day = day!!,
+                                time = time!!,
+                                room = room!!
+                            )
+
+                            db.routineDao().insertRoutine(routineEntity)
+
+                        }
 
                         val intent = Intent(this, Dashboard::class.java)
-                        startActivity(intent);
-                        finish();
+                       startActivity(intent);
+                       finish();
                     } else {
                         Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show()
                     }

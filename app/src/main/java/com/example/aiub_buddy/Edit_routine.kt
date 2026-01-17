@@ -20,6 +20,7 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import com.example.aiub_buddy.data.dao.RoutineDao
+import com.google.firebase.database.FirebaseDatabase
 
 
 class Edit_routine : AppCompatActivity() {
@@ -62,6 +63,8 @@ class Edit_routine : AppCompatActivity() {
             }
         }.start()
 
+
+
         val dialog = AlertDialog.Builder(this)
             .setTitle("Add Routine")
             .setView(dialogView)
@@ -91,6 +94,7 @@ class Edit_routine : AppCompatActivity() {
                 else -> {
                     // Save routine
                     val routine = RoutineEntity(
+                        subject_id = "$subject-$day-$time-$room",
                         subject = subject,
                         day = day,
                         time = time,
@@ -98,6 +102,11 @@ class Edit_routine : AppCompatActivity() {
                     )
 
                     Thread {
+
+
+
+
+
                         routineDao.insertRoutine(routine)
                         loadRoutines()
                     }.start()
@@ -113,6 +122,7 @@ class Edit_routine : AppCompatActivity() {
     fun deleteRoutine(routine: Routine) {
         Thread {
             routineDao.deleteByDetails(
+
                 routine.courseName,
                 routine.day,
                 routine.time,
@@ -167,6 +177,7 @@ class Edit_routine : AppCompatActivity() {
 
                 // Insert the updated version
                 val updatedEntity = RoutineEntity(
+                    subject_id = "${actvSubject.text}-${spinnerDay.selectedItem}-${etTime.text}-${etRoom.text}",
                     subject = actvSubject.text.toString(),
                     day = spinnerDay.selectedItem.toString(),
                     time = etTime.text.toString(),

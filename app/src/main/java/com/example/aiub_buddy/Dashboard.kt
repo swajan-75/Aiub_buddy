@@ -153,7 +153,7 @@ class Dashboard : AppCompatActivity() {
 
         val routine = db.routineDao().getAllRoutine();
         val routineList = routine.map {
-            Routine(123,it.subject,it.day , it.time,it.room)
+            Routine(it.id,it.subject,it.day , it.time,it.room)
         }
 
 

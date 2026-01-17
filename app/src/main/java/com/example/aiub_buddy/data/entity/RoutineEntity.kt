@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 data class RoutineEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+    val subject_id: String,
     val subject: String,
     val day: String,
     val time: String,

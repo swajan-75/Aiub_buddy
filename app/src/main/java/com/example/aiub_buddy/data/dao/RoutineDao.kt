@@ -39,6 +39,10 @@ AND room = :room
         room: String
     )
 
+    @Query("DELETE FROM routine")
+    fun deleteAll()
+
+
 
 
 
