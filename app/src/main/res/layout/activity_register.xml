@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".Register">
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="167dp"
+        android:layout_height="36dp"
+        android:text="New Account"
+        android:textColor="#2260FF"
+        android:textSize="24dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.076" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="367dp"
+        android:layout_height="302dp"
+        android:background="@drawable/card_background"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.376">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:text="First Name"
+            android:textColor="#000000"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/first_name"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded"
+            android:ems="10"
+            android:inputType="text"
+            android:padding="10dp"
+            android:text=""
+            android:textColor="#809CFF" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:text="Last Name"
+            android:textColor="#000000"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/last_name"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded"
+            android:ems="10"
+            android:inputType="text"
+            android:padding="10dp"
+            android:text=""
+            android:textColor="#809CFF" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="9dp"
+            android:text="Student ID"
+            android:textColor="#000000"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/student_id"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_margin="10dp"
+            android:background="@drawable/edit_text_rounded"
+            android:ems="10"
+            android:inputType="text"
+            android:padding="10dp"
+            android:hint="12-12345-1"
+            android:textColor="#809CFF" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/next"
+        android:layout_width="155dp"
+        android:layout_height="42dp"
+        android:background="@drawable/button"
+        android:text="Next"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.701"
+
+        />
+
+    <ImageButton
+        android:id="@+id/back_btn"
+        android:layout_width="34dp"
+        android:layout_height="30dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.042"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.032"
+        app:srcCompat="@drawable/back_btn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

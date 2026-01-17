@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "428635653003",
+    "firebase_url": "https://aiubbuddy-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "aiubbuddy",
+    "storage_bucket": "aiubbuddy.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:428635653003:android:0300a05716766887a6658e",
+        "android_client_info": {
+          "package_name": "com.example.aiub_buddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0xFca-dMH63gjNh7YCappPENTNkeqxcc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Subject (Search + Select) -->
+    <AutoCompleteTextView
+        android:id="@+id/actvSubject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Select Subject"
+        android:inputType="text" />
+
+    <!-- Day Selector -->
+    <Spinner
+        android:id="@+id/spinnerDay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp" />
+
+    <EditText
+        android:id="@+id/etTime"
+        android:hint="Time (10:00 - 11:00)"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/etRoom"
+        android:hint="Room"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+</LinearLayout>

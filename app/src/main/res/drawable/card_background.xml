@@ -1,0 +1,16 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- White color with transparency -->
+    <solid android:color="#CCFFFFFF"/> <!-- CC = 80% opacity -->
+
+    <!-- Rounded corners -->
+    <corners android:radius="16dp"/>
+
+    <!-- Optional: shadow (requires CardView or elevation) -->
+    <padding
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp"/>
+</shape>
