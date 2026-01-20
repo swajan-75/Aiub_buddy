@@ -26,7 +26,7 @@ class RoutineAdapter(private val list: List<Routine>) : RecyclerView.Adapter<Rou
         val routine = list[position] // get the Routine object
         holder.tvCourseName.text = routine.courseName
         holder.tvDay.text = routine.day
-        holder.tvTime.text = routine.time
+        holder.tvTime.text = routine.startTime + " - " + routine.endTime
         holder.tvRoom.text = routine.roomNumber
     }
 

@@ -19,7 +19,6 @@ class EditRoutineAdapter(
         val tvTime: TextView = view.findViewById(R.id.tvTime)
         val tvRoom: TextView = view.findViewById(R.id.tvRoom)
         val btnDelete: ImageButton = view.findViewById(R.id.btnDelete)
-
         val btnEdit: ImageButton = view.findViewById(R.id.btnEdit)
     }
 
@@ -34,7 +33,7 @@ class EditRoutineAdapter(
 
         holder.tvCourseName.text = routine.courseName
         holder.tvDay.text = routine.day
-        holder.tvTime.text = routine.time
+        holder.tvTime.text = "${routine.startTime} - ${routine.endTime}"
         holder.tvRoom.text = routine.roomNumber
 
         holder.btnDelete.setOnClickListener {

@@ -9,7 +9,8 @@ import androidx.room.Update
 import com.example.aiub_buddy.data.entity.RoutineEntity
 
 @Dao
-interface RoutineDao{
+interface RoutineDao {
+
     @Query("SELECT * FROM routine WHERE day = :day")
     fun getRoutineByDay(day: String): List<RoutineEntity>
 
@@ -19,33 +20,12 @@ interface RoutineDao{
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertRoutine(routine: RoutineEntity)
 
-    @Delete
-    fun deleteRoutine(routine: RoutineEntity)
-
-    @Update
-    fun updateRoutine(routine: RoutineEntity)
-
-    @Query("""
-DELETE FROM routine 
-WHERE subject = :subject 
-AND day = :day 
-AND time = :time 
-AND room = :room
-""")
-    fun deleteByDetails(
-        subject: String,
-        day: String,
-        time: String,
-        room: String
-    )
+    @Query("DELETE FROM routine WHERE subject_id = :subjectId")
+    fun deleteBySubjectId(subjectId: String)
 
     @Query("DELETE FROM routine")
     fun deleteAll()
-
-
-
-
-
-
-
 }
+
+
+

@@ -1,167 +1,212 @@
 package com.example.aiub_buddy
 
+import android.annotation.SuppressLint
+import android.app.TimePickerDialog
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.ImageButton
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.aiub_buddy.data.database.AppDatabase
-import com.example.aiub_buddy.data.entity.RoutineEntity
-import androidx.appcompat.app.AlertDialog
-import android.view.LayoutInflater
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.Toast
 import com.example.aiub_buddy.data.dao.RoutineDao
-import com.google.firebase.database.FirebaseDatabase
-
+import com.example.aiub_buddy.data.entity.RoutineEntity
+import com.google.firebase.Firebase
+import com.google.firebase.database.database
+import java.time.LocalTime
+import java.util.Calendar
+import java.util.Locale
 
 class Edit_routine : AppCompatActivity() {
 
-    private lateinit var rvEditRoutine : RecyclerView
-    private lateinit var routineDao : RoutineDao
+    private lateinit var rvEditRoutine: RecyclerView
+    private lateinit var routineDao: RoutineDao
 
-    private fun showAddRoutineDialog() {
-        val dialogView = LayoutInflater.from(this)
-            .inflate(R.layout.dialog_add_routine, null)
+    /* ---------------- TIME PICKER ---------------- */
 
-        val actvSubject = dialogView.findViewById<AutoCompleteTextView>(R.id.actvSubject)
-        val spinnerDay = dialogView.findViewById<Spinner>(R.id.spinnerDay)
-        val etTime = dialogView.findViewById<EditText>(R.id.etTime)
-        val etRoom = dialogView.findViewById<EditText>(R.id.etRoom)
-
-        // Days list
-        val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","None")
-        spinnerDay.adapter = ArrayAdapter(
+    private fun showTimePicker(target: EditText) {
+        val cal = Calendar.getInstance()
+        TimePickerDialog(
             this,
-            android.R.layout.simple_spinner_dropdown_item,
-            days
+            { _, h, m ->
+                target.setText(String.format(Locale.US, "%02d:%02d", h, m))
+            },
+            cal.get(Calendar.HOUR_OF_DAY),
+            cal.get(Calendar.MINUTE),
+            true
+        ).show()
+    }
+
+    /* ---------------- ADD ROUTINE ---------------- */
+
+
+
+
+    @SuppressLint("SuspiciousIndentation")
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun updtae_firebase_routine(routineEntity: RoutineEntity){
+
+        val new_subject = Subject(
+            routineEntity.subject_id,
+            routineEntity.subject,
+            subject_time(
+                routineEntity.startTime,
+                routineEntity.endTime
+            ),
+            routineEntity.room,
+            routineEntity.subject_id,
+            routineEntity.day
+            )
+
+
+
+
+        val logged_in_student = AppDatabase.getDatabase(this).studentDao().getLoggedInStudent()
+           val database = Firebase.database(
+            "https://aiubbuddy-default-rtdb.asia-southeast1.firebasedatabase.app/"
         )
+      val routine  = database.getReference("student").child(logged_in_student?.studentId.toString())
+            .child("routine")//.push().setValue(new_subject)
 
-        // Load subjects from DB
+
+        routine.child(routineEntity.subject_id.toLowerCase()).setValue(new_subject)
+
+
+
+
+      //  Toast.makeText(this,"Student : ${logged_in_student?.studentId}",Toast.LENGTH_SHORT).show()
+
+
+    }
+    private fun delete_firebase_routine(routineEntity: RoutineEntity){
+        val logged_in_student = AppDatabase.getDatabase(this).studentDao().getLoggedInStudent()
+        val database = Firebase.database(
+            "https://aiubbuddy-default-rtdb.asia-southeast1.firebasedatabase.app/"
+        )
+        val routine  = database.getReference("student").child(logged_in_student?.studentId.toString())
+            .child("routine")
+        routine.child(routineEntity.subject_id.toLowerCase()).removeValue()
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun showAddRoutineDialog() {
+
+        val view = layoutInflater.inflate(R.layout.dialog_add_routine, null)
+
+        val subjectEt = view.findViewById<AutoCompleteTextView>(R.id.actvSubject)
+        val daySpinner = view.findViewById<Spinner>(R.id.spinnerDay)
+        val startEt = view.findViewById<EditText>(R.id.etStartTime)
+        val endEt = view.findViewById<EditText>(R.id.etEndTime)
+        val roomEt = view.findViewById<EditText>(R.id.etRoom)
+
+        val days = listOf("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","None")
+        daySpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, days)
+
+        startEt.setOnClickListener { showTimePicker(startEt) }
+        endEt.setOnClickListener { showTimePicker(endEt) }
+
+        // Load subjects
         Thread {
-            val subjects = AppDatabase.getDatabase(this)
-                .subjectDao()
-                .getAllSubjects()
-
-            val subjectNames = subjects.map { it.name }
-
+            val subjects = AppDatabase.getDatabase(this).subjectDao().getAllSubjects()
             runOnUiThread {
-                val adapter = ArrayAdapter(
-                    this,
-                    android.R.layout.simple_dropdown_item_1line,
-                    subjectNames
+                subjectEt.setAdapter(
+                    ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, subjects.map { it.name })
                 )
-                actvSubject.setAdapter(adapter)
             }
         }.start()
 
-
-
         val dialog = AlertDialog.Builder(this)
             .setTitle("Add Routine")
-            .setView(dialogView)
-            .setPositiveButton("Save", null) // override later
+            .setView(view)
+            .setPositiveButton("Save", null)
             .setNegativeButton("Cancel", null)
             .create()
 
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            val subject = actvSubject.text.toString().trim()
-            val day = spinnerDay.selectedItem.toString()
-            val time = etTime.text.toString().trim()
-            val room = etRoom.text.toString().trim()
 
-            // Validation with Toast
-            when {
-                subject.isEmpty() -> {
-                    Toast.makeText(this, "Please select a subject", Toast.LENGTH_SHORT).show()
-                }
-                day != "None" && time.isEmpty() -> {
-                    Toast.makeText(this, "Please enter time", Toast.LENGTH_SHORT).show()
-                }
-                day != "None" && room.isEmpty() -> {
-                    Toast.makeText(this, "Please enter room", Toast.LENGTH_SHORT).show()
-                }
-                else -> {
-                    // Save routine
-                    val routine = RoutineEntity(
-                        subject_id = "$subject-$day-$time-$room",
-                        subject = subject,
-                        day = day,
-                        time = time,
-                        room = room
-                    )
+            val subject = subjectEt.text.toString().trim()
+            val day = daySpinner.selectedItem.toString()
+            val start = startEt.text.toString()
+            val end = endEt.text.toString()
+            val room = roomEt.text.toString()
 
-                    Thread {
-
-
-
-
-
-                        routineDao.insertRoutine(routine)
-                        loadRoutines()
-                    }.start()
-
-                    dialog.dismiss()
-                }
+            if (subject.isEmpty() || day == "None" || start.isEmpty() || end.isEmpty() || room.isEmpty()) {
+                Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            val id = "$subject-$day-$start-$end-$end-$room"
+                .lowercase(Locale.US)
+                .replace(" ", "")
+
+            val entity = RoutineEntity(
+
+                subject_id = id,
+                subject = subject,
+                day = day,
+                startTime = start,
+                endTime = end,
+                room = room
+            )
+
+            Thread {
+                updtae_firebase_routine(entity)
+                routineDao.insertRoutine(entity)
+                loadRoutines()
+            }.start()
+
+            dialog.dismiss()
         }
     }
 
+    /* ---------------- EDIT ROUTINE ---------------- */
 
-
-    fun deleteRoutine(routine: Routine) {
-        Thread {
-            routineDao.deleteByDetails(
-
-                routine.courseName,
-                routine.day,
-                routine.time,
-                routine.roomNumber
-            )
-            loadRoutines()
-        }.start()
-    }
-
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun showEditRoutineDialog(routine: Routine) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_routine, null)
+        //Toast.makeText(this,"subject Id : ${routine.subject_id}",Toast.LENGTH_SHORT).show()
 
-        val actvSubject = dialogView.findViewById<AutoCompleteTextView>(R.id.actvSubject)
-        val spinnerDay = dialogView.findViewById<Spinner>(R.id.spinnerDay)
-        val etTime = dialogView.findViewById<EditText>(R.id.etTime)
-        val etRoom = dialogView.findViewById<EditText>(R.id.etRoom)
+        val view = layoutInflater.inflate(R.layout.dialog_add_routine, null)
 
-        // 1. Pre-fill existing data
-        actvSubject.setText(routine.courseName)
-        etTime.setText(routine.time)
-        etRoom.setText(routine.roomNumber)
+        val subjectEt = view.findViewById<AutoCompleteTextView>(R.id.actvSubject)
+        val daySpinner = view.findViewById<Spinner>(R.id.spinnerDay)
+        val startEt = view.findViewById<EditText>(R.id.etStartTime)
+        val endEt = view.findViewById<EditText>(R.id.etEndTime)
+        val roomEt = view.findViewById<EditText>(R.id.etRoom)
 
-        val days = listOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","None")
-        val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, days)
-        spinnerDay.adapter = dayAdapter
-        spinnerDay.setSelection(days.indexOf(routine.day))
+        subjectEt.setText(routine.courseName)
+        startEt.setText(routine.startTime)
+        endEt.setText(routine.endTime)
+        roomEt.setText(routine.roomNumber)
 
-        // 2. Setup Subject AutoComplete (same as your Add logic)
+        startEt.setOnClickListener { showTimePicker(startEt) }
+        endEt.setOnClickListener { showTimePicker(endEt) }
+
+        val days = listOf("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","None")
+        daySpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, days)
+        daySpinner.setSelection(days.indexOf(routine.day))
+
         Thread {
             val subjects = AppDatabase.getDatabase(this).subjectDao().getAllSubjects()
-            val subjectNames = subjects.map { it.name }
             runOnUiThread {
-                actvSubject.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, subjectNames))
+                subjectEt.setAdapter(
+                    ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, subjects.map { it.name })
+                )
             }
         }.start()
 
+
+
+
         val dialog = AlertDialog.Builder(this)
             .setTitle("Edit Routine")
-            .setView(dialogView)
+            .setView(view)
             .setPositiveButton("Update", null)
             .setNegativeButton("Cancel", null)
             .create()
@@ -169,85 +214,114 @@ class Edit_routine : AppCompatActivity() {
         dialog.show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-            // ... Validation logic (same as your Add code) ...
 
             Thread {
-                // Delete the old record first (since we don't have a primary key ID in your Routine class)
-                routineDao.deleteByDetails(routine.courseName, routine.day, routine.time, routine.roomNumber)
 
-                // Insert the updated version
-                val updatedEntity = RoutineEntity(
-                    subject_id = "${actvSubject.text}-${spinnerDay.selectedItem}-${etTime.text}-${etRoom.text}",
-                    subject = actvSubject.text.toString(),
-                    day = spinnerDay.selectedItem.toString(),
-                    time = etTime.text.toString(),
-                    room = etRoom.text.toString()
+                delete_firebase_routine(RoutineEntity(
+                    subject_id = routine.subject_id,
+                    subject = subjectEt.text.toString(),
+                    day = daySpinner.selectedItem.toString(),
+                    startTime = startEt.text.toString(),
+                    endTime = endEt.text.toString(),
+                    room = roomEt.text.toString()
+                ))
+                routineDao.deleteBySubjectId(routine.subject_id)
+
+                val newId = "${subjectEt.text}-${daySpinner.selectedItem}-${startEt.text}-${endEt.text}-${roomEt.text}"
+                    .lowercase(Locale.US).replace(" ","")
+
+                routineDao.insertRoutine(
+                    RoutineEntity(
+                        subject_id = newId,
+                        subject = subjectEt.text.toString(),
+                        day = daySpinner.selectedItem.toString(),
+                        startTime = startEt.text.toString(),
+                        endTime = endEt.text.toString(),
+                        room = roomEt.text.toString()
+                    )
                 )
-                routineDao.insertRoutine(updatedEntity)
+                updtae_firebase_routine(RoutineEntity(
+                    subject_id = newId,
+                    subject = subjectEt.text.toString(),
+                    day = daySpinner.selectedItem.toString(),
+                    startTime = startEt.text.toString(),
+                    endTime = endEt.text.toString(),
+                    room = roomEt.text.toString()
+                ))
 
                 loadRoutines()
                 runOnUiThread { dialog.dismiss() }
             }.start()
         }
     }
-    fun loadRoutines() {
+
+    /* ---------------- LOAD / DELETE ---------------- */
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun deleteRoutine(routine: Routine) {
         Thread {
-            val entities = routineDao.getAllRoutine()
-            val routines = entities.map {
-                Routine(123,it.subject, it.day, it.time, it.room)
+            delete_firebase_routine(RoutineEntity(
+                subject_id = routine.subject_id,
+                subject = routine.courseName,
+                day = routine.day,
+                startTime = routine.startTime,
+                endTime = routine.endTime,
+                room = routine.roomNumber
+            ))
+            routineDao.deleteBySubjectId(routine.subject_id)
+            loadRoutines()
+        }.start()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun loadRoutines() {
+        Thread {
+            val routines = routineDao.getAllRoutine().map {
+                Routine(it.id ,it.subject_id, it.subject, it.day, it.startTime, it.endTime, it.room)
             }
 
             runOnUiThread {
-                rvEditRoutine.adapter = EditRoutineAdapter(routines,
-                    onDelete = { routine -> deleteRoutine(routine) },
-                    onEdit = { routine -> showEditRoutineDialog(routine) } // Call edit dialog
+                rvEditRoutine.adapter = EditRoutineAdapter(
+                    routines,
+                    onDelete = { deleteRoutine(it) },
+                    onEdit = { showEditRoutineDialog(it) }
                 )
             }
         }.start()
     }
 
+    /* ---------------- ACTIVITY ---------------- */
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_edit_routine)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, i ->
+            v.setPadding(
+                i.getInsets(WindowInsetsCompat.Type.systemBars()).left,
+                i.getInsets(WindowInsetsCompat.Type.systemBars()).top,
+                i.getInsets(WindowInsetsCompat.Type.systemBars()).right,
+                i.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+            )
+            i
         }
 
         rvEditRoutine = findViewById(R.id.rvEditRoutine)
         rvEditRoutine.layoutManager = LinearLayoutManager(this)
 
-
-        val db = AppDatabase.getDatabase(this)
-        routineDao = db.routineDao()
-
-
+        routineDao = AppDatabase.getDatabase(this).routineDao()
 
         loadRoutines()
-//        Thread {
-//            val names = AppDatabase.getDatabase(this)
-//                .subjectDao()
-//                .getAllSubjects()
-//                .map { it.name }
-//
-//            Log.d("SUBJECT_DB", "All Subjects: $names")
-//        }.start()
-
-        findViewById<ImageButton>(R.id.back_btn2).setOnClickListener {
-            val intent = Intent(this, Dashboard::class.java)
-            startActivity(intent)
-            finish()
-
-        }
 
         findViewById<ImageButton>(R.id.add_btn).setOnClickListener {
+
             showAddRoutineDialog()
         }
-
-
+        findViewById<ImageButton>(R.id.back_btn2).setOnClickListener {
+            startActivity(Intent(this, Dashboard::class.java))
+            finish()
+        }
     }
 }

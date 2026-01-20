@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.aiub_buddy.data.database.AppDatabase
+import com.example.aiub_buddy.data.entity.FacultyEntity
 import com.example.aiub_buddy.data.entity.RoutineEntity
 import com.example.aiub_buddy.data.entity.StudentEntity
 import com.google.firebase.Firebase
@@ -19,6 +20,11 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +33,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
+
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -40,9 +48,21 @@ class MainActivity : AppCompatActivity() {
         val btn_login = findViewById<Button>(R.id.btn_login);
         val btn_register = findViewById<Button>(R.id.btn_register);
 
+        val test_email = "22-46838-1@student.aiub.edu";
+        val test_pass = "123456"
+
+
+
+
+
+
+
+
+
         btn_login.setOnClickListener {
            // Toast.makeText(this, "Firebase test started", Toast.LENGTH_SHORT).show()
-
+            user_name.setText(test_email)
+            user_password.setText(test_pass)
             val database = Firebase.database(
                 "https://aiubbuddy-default-rtdb.asia-southeast1.firebasedatabase.app/"
             )
@@ -66,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                         //Toast.makeText(this, "Firebase test started", Toast.LENGTH_SHORT).show()")
 
                         if (user_name.text.toString() == email && user_password.text.toString() == password) {
-                            flag = true;
+
                             logged_in_student = student_data;
                             break;
                         }
@@ -74,6 +94,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     if (logged_in_student!=null) {
+
 
                         val email = logged_in_student.child("email").getValue(String::class.java)
                         val firstName = logged_in_student.child("first_name").getValue(String::class.java)
@@ -95,7 +116,10 @@ class MainActivity : AppCompatActivity() {
                             profileImg = profileImg
                         )
 
+
+
                         db.studentDao().insertStudent(student_entity)
+                      //  Toast.makeText(this, "test 1", Toast.LENGTH_SHORT).show()
 
 
                         db.routineDao().deleteAll()
@@ -115,15 +139,22 @@ class MainActivity : AppCompatActivity() {
                             val subject_id = routine_data.child("subject_id").getValue(String::class.java)
                             val subject = routine_data.child("subject_name").getValue(String::class.java)
                             val day = routine_data.child("day").getValue(String::class.java)
-                            val time = routine_data.child("time").getValue(String::class.java)
+                           // Toast.makeText(this,"Subject : $subject_id \n Day : $day",Toast.LENGTH_SHORT).show()
+                            //val time = routine_data.child("time").getValue(String::class.java)
+                            val startTime = routine_data.child("time").child("starting_time").getValue(String::class.java)?:""
+                            val endTime = routine_data.child("time").child("ending_time").getValue(String::class.java)?:""
+
                             val room = routine_data.child("room").getValue(String::class.java)
-                            //Toast.makeText(this,"Subject : $subject \n Day : $day \n Time : $time \n Room : $room",Toast.LENGTH_SHORT).show()
+                           // Toast.makeText(this,"Subject : $subject \n Day : $day \n Time : $startTime - $endTime \n Room : $room",Toast.LENGTH_SHORT).show()
+                            //runOnUiThread {
+                            //    Toast.makeText(this, "$startTime - $endTime", Toast.LENGTH_SHORT).show()
 
                             val routineEntity = RoutineEntity(
                                 subject_id = subject_id!!,
                                 subject = subject!!,
                                 day = day!!,
-                                time = time!!,
+                                startTime = startTime,
+                                endTime = endTime,
                                 room = room!!
                             )
 
@@ -151,6 +182,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
 
 
 

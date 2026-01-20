@@ -18,8 +18,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.aiub_buddy.api_service.ApiService
 import com.example.aiub_buddy.data.dao.RoutineDao
 import com.example.aiub_buddy.data.database.AppDatabase
+import com.example.aiub_buddy.data.entity.FacultyEntity
 import com.example.aiub_buddy.data.seed.SubjectSeeder
 
 // Retrofit Networking
@@ -50,6 +52,8 @@ class Dashboard : AppCompatActivity() {
         }
         tvNoClass = findViewById<TextView>(R.id.tvNoClass)
         fun updateRoutineUI(list: List<Routine>) {
+            findViewById<TextView>(R.id.user_name_tv).text = AppDatabase.getDatabase(this).studentDao().getLoggedInStudent()?.firstName
+
             if (list.isEmpty()) {
 
                 tvNoClass.visibility = View.VISIBLE
@@ -72,13 +76,6 @@ class Dashboard : AppCompatActivity() {
             }
         }.start()
 
-
-
-
-
-
-
-
         dayButtons = listOf(
             findViewById(R.id.button6),  // Sunday
             findViewById(R.id.button7),  // Monday
@@ -98,6 +95,56 @@ class Dashboard : AppCompatActivity() {
             selected.setTextColor(getColor(android.R.color.white))
 
         }
+        val apiService = ApiService()
+
+        apiService.getAllFaculty(
+            onSuccess = { facultyList ->
+
+                val entities = facultyList.map {
+                    FacultyEntity(
+                        email = it.email,
+                        name = it.name,
+                        faculty = it.faculty,
+                        designation = it.designation,
+                        position = it.position,
+                        department = it.department,
+                        profile_photo = it.profile_photo,
+                        profile_link = it.profile_link,
+                        room_number = it.room_number,
+                        building_number = it.building_number,
+                        academic_interests = it.academic_interests.joinToString(","),
+                        research_interests = it.research_interests.joinToString(",")
+                    )
+                }
+
+                // Save to Room in background
+                Thread {
+                    val db = AppDatabase.getDatabase(this)
+                    db.facultyDao().insertAll(entities)
+
+//                    runOnUiThread {
+//                        if (entities.isNotEmpty()) {
+//                            Toast.makeText(
+//                                this,
+//                                "First Faculty: ${entities[0].name}",
+//                                Toast.LENGTH_SHORT
+//                            ).show()
+//                        }
+//                    }
+                }.start()
+            },
+            onError = { error ->
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+            }
+        )
+
+
+
+
+
+
+
+
 
         fun fetchNotices() {
             val retrofit = Retrofit.Builder()
@@ -153,7 +200,7 @@ class Dashboard : AppCompatActivity() {
 
         val routine = db.routineDao().getAllRoutine();
         val routineList = routine.map {
-            Routine(it.id,it.subject,it.day , it.time,it.room)
+            Routine(it.id,it.subject_id,it.subject,it.day , it.startTime,it.endTime,it.room)
         }
 
 
@@ -194,6 +241,7 @@ class Dashboard : AppCompatActivity() {
         }
         findViewById<Button>(R.id.button7).setOnClickListener {
             highlightButton(findViewById(R.id.button7))
+
             updateRoutineUI(filter_routine_by_day("Monday", routineList))
         }
         findViewById<Button>(R.id.button8).setOnClickListener {
@@ -213,6 +261,7 @@ class Dashboard : AppCompatActivity() {
             updateRoutineUI(filter_routine_by_day("Friday", routineList))
         }
         findViewById<Button>(R.id.button12).setOnClickListener {
+
             highlightButton(findViewById(R.id.button12))
             updateRoutineUI(filter_routine_by_day("Saturday", routineList))
         }

@@ -11,7 +11,8 @@ data class RoutineEntity(
     val subject_id: String,
     val subject: String,
     val day: String,
-    val time: String,
+    val startTime : String,
+    val endTime : String,
     val room: String
 
 )

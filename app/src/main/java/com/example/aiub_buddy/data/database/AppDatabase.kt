@@ -4,19 +4,24 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.aiub_buddy.data.dao.FacultyDao
 import com.example.aiub_buddy.data.dao.RoutineDao
 import com.example.aiub_buddy.data.dao.StudentDao
 import com.example.aiub_buddy.data.dao.SubjectDao
+import com.example.aiub_buddy.data.entity.FacultyEntity
 import com.example.aiub_buddy.data.entity.RoutineEntity
 import com.example.aiub_buddy.data.entity.StudentEntity
 import com.example.aiub_buddy.data.entity.SubjectEntity
 
-@Database(entities = [RoutineEntity::class, SubjectEntity::class , StudentEntity::class], version = 4)
+@Database(entities = [RoutineEntity::class, SubjectEntity::class , StudentEntity::class , FacultyEntity::class], version = 5)
 abstract class AppDatabase : RoomDatabase(){
     abstract fun routineDao(): RoutineDao
     abstract  fun subjectDao() : SubjectDao
 
     abstract fun studentDao() : StudentDao
+
+    abstract fun facultyDao() : FacultyDao
+
 
 
 
