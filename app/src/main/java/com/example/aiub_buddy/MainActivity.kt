@@ -12,19 +12,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.aiub_buddy.data.database.AppDatabase
-import com.example.aiub_buddy.data.entity.FacultyEntity
 import com.example.aiub_buddy.data.entity.RoutineEntity
 import com.example.aiub_buddy.data.entity.StudentEntity
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.database
-import com.google.firebase.database.getValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlin.concurrent.thread
+import com.google.firebase.messaging.FirebaseMessaging
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,8 +27,26 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(this)
 
+        val db = AppDatabase.getDatabase(this)
+        val loggedUser = db.studentDao().getLoggedInStudent()
+
+        if (loggedUser != null) {
+            startActivity(Intent(this, Dashboard::class.java))
+            finish()
+            return
+        }
+
+
+
+
+        FirebaseApp.initializeApp(this)
+        FirebaseMessaging.getInstance().subscribeToTopic("notices")
+            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    Toast.makeText(this, "Subscribed to notices", Toast.LENGTH_SHORT).show()
+//                }
+            }
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -52,17 +65,10 @@ class MainActivity : AppCompatActivity() {
         val test_pass = "123456"
 
 
-
-
-
-
-
-
-
         btn_login.setOnClickListener {
            // Toast.makeText(this, "Firebase test started", Toast.LENGTH_SHORT).show()
-            user_name.setText(test_email)
-            user_password.setText(test_pass)
+//            user_name.setText(test_email)
+//            user_password.setText(test_pass)
             val database = Firebase.database(
                 "https://aiubbuddy-default-rtdb.asia-southeast1.firebasedatabase.app/"
             )
@@ -118,6 +124,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
+                        db.studentDao().logout();
                         db.studentDao().insertStudent(student_entity)
                       //  Toast.makeText(this, "test 1", Toast.LENGTH_SHORT).show()
 

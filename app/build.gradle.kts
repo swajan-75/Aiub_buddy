@@ -53,6 +53,7 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.8.0"))
     implementation(libs.firebase.database) // KTX library
     implementation("com.google.firebase:firebase-analytics") // optional
+    implementation ("com.google.firebase:firebase-messaging")
 
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.11.0")

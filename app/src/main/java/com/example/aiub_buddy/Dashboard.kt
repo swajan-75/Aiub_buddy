@@ -65,6 +65,56 @@ class Dashboard : AppCompatActivity() {
             rvRoutine.adapter = RoutineAdapter(list)
         }
 
+        val settings_btn = findViewById<Button>(R.id.button2)
+        settings_btn.setOnClickListener { view ->
+            val popupMenu = PopupMenu(this, view)
+            popupMenu.menuInflater.inflate(R.menu.menu_dashboard, popupMenu.menu)
+
+
+            try {
+                val fields = popupMenu.javaClass.declaredFields
+                for (field in fields) {
+                    if ("mPopup" == field.name) {
+                        field.isAccessible = true
+                        val menuPopupHelper = field.get(popupMenu)
+                        val classPopupHelper =
+                            Class.forName(menuPopupHelper.javaClass.name)
+                        val setForceIcons = classPopupHelper.getMethod(
+                            "setForceShowIcon",
+                            Boolean::class.javaPrimitiveType
+                        )
+                        setForceIcons.invoke(menuPopupHelper, true)
+                        break
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            popupMenu.setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.profile -> {
+                        Toast.makeText(this, "Profile clicked", Toast.LENGTH_SHORT).show()
+                        true
+                    }
+                    R.id.logout -> {
+                        logoutUser()
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            popupMenu.show()
+        }
+
+
+
+
+
+
+
+
 
         val db = AppDatabase.getDatabase(this)
         val subjectDao = db.subjectDao()
@@ -335,5 +385,24 @@ class Dashboard : AppCompatActivity() {
         //val noticeList =
 
         //rvNotices.adapter = NoticeAdapter(noticeList)
+    }
+    private fun logoutUser() {
+        Thread {
+            val db = AppDatabase.getDatabase(this)
+
+            // Clear the student and routine tables
+            db.studentDao().logout()
+            db.routineDao().deleteAll()
+
+            runOnUiThread {
+                Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+
+                // Redirect to login screen and clear back stack
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+        }.start()
     }
 }

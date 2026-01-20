@@ -2,23 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/menu_search_faculty"
-        android:title="Search Faculty" />
-
-    <item
-        android:id="@+id/menu_about"
-        android:title="About" />
-
-    <item
-        android:id="@+id/menu_profile"
+        android:id="@+id/profile"
         android:title="Profile" />
 
     <item
-        android:id="@+id/menu_result_count"
-        android:title="Chats" />
-
-    <item
-        android:id="@+id/menu_course_details"
-        android:title="Course Details" />
+        android:id="@+id/logout"
+        android:title="Log Out" />
 
 </menu>
