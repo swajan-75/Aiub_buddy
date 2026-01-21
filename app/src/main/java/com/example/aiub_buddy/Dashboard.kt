@@ -4,9 +4,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -16,6 +19,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.aiub_buddy.api_service.ApiService
@@ -50,6 +54,65 @@ class Dashboard : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        val facultyRecycler = findViewById<RecyclerView>(R.id.rvFaculty) // Make sure your RecyclerView in XML has id rvFaculty
+        facultyRecycler.layoutManager = LinearLayoutManager(this)
+
+
+        val facultyAdapter = FacultyAdapter(emptyList())
+        facultyRecycler.adapter = facultyAdapter
+
+// Full list to keep all faculty
+        val allFacultyList = mutableListOf<FacultyEntity>()
+
+        val apiService = ApiService()
+        apiService.getAllFaculty(
+            onSuccess = { facultyList ->
+                allFacultyList.clear()
+                allFacultyList.addAll(facultyList.map {
+                    FacultyEntity(
+                        email = it.email,
+                        name = it.name,
+                        faculty = it.faculty,
+                        designation = it.designation,
+                        position = it.position,
+                        department = it.department,
+                        profile_photo = it.profile_photo,
+                        profile_link = it.profile_link,
+                        room_number = it.room_number,
+                        building_number = it.building_number,
+                        academic_interests = it.academic_interests.joinToString(","),
+                        research_interests = it.research_interests.joinToString(",")
+                    )
+                })
+
+                // Update adapter with full list
+                runOnUiThread {
+                    facultyAdapter.updateList(allFacultyList)
+                }
+            },
+            onError = { error ->
+                Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        val searchEditText = findViewById<EditText>(R.id.search_faculty)
+        searchEditText.addTextChangedListener { text ->
+            val query = text.toString()
+            if (query.isEmpty()) {
+                facultyRecycler.visibility = View.GONE
+                findViewById<View>(R.id.facultyBackground).visibility = View.GONE
+            } else {
+                facultyRecycler.visibility = View.VISIBLE
+                findViewById<View>(R.id.facultyBackground).visibility = View.VISIBLE
+                facultyAdapter.filter(query)
+            }
+        }
+
+
+
+
+
         tvNoClass = findViewById<TextView>(R.id.tvNoClass)
         fun updateRoutineUI(list: List<Routine>) {
             findViewById<TextView>(R.id.user_name_tv).text = AppDatabase.getDatabase(this).studentDao().getLoggedInStudent()?.firstName
@@ -64,6 +127,8 @@ class Dashboard : AppCompatActivity() {
             }
             rvRoutine.adapter = RoutineAdapter(list)
         }
+
+
 
         val settings_btn = findViewById<Button>(R.id.button2)
         settings_btn.setOnClickListener { view ->
@@ -145,48 +210,7 @@ class Dashboard : AppCompatActivity() {
             selected.setTextColor(getColor(android.R.color.white))
 
         }
-        val apiService = ApiService()
 
-        apiService.getAllFaculty(
-            onSuccess = { facultyList ->
-
-                val entities = facultyList.map {
-                    FacultyEntity(
-                        email = it.email,
-                        name = it.name,
-                        faculty = it.faculty,
-                        designation = it.designation,
-                        position = it.position,
-                        department = it.department,
-                        profile_photo = it.profile_photo,
-                        profile_link = it.profile_link,
-                        room_number = it.room_number,
-                        building_number = it.building_number,
-                        academic_interests = it.academic_interests.joinToString(","),
-                        research_interests = it.research_interests.joinToString(",")
-                    )
-                }
-
-                // Save to Room in background
-                Thread {
-                    val db = AppDatabase.getDatabase(this)
-                    db.facultyDao().insertAll(entities)
-
-//                    runOnUiThread {
-//                        if (entities.isNotEmpty()) {
-//                            Toast.makeText(
-//                                this,
-//                                "First Faculty: ${entities[0].name}",
-//                                Toast.LENGTH_SHORT
-//                            ).show()
-//                        }
-//                    }
-                }.start()
-            },
-            onError = { error ->
-                Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
-            }
-        )
 
 
 

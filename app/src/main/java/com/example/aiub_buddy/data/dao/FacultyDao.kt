@@ -11,6 +11,9 @@ interface FacultyDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(facultyList: List<FacultyEntity>)
 
-    @Query("SELECT * FROM faculty")
+    @Query("SELECT * FROM faculty ORDER BY name ASC")
     fun getAllFaculty(): List<FacultyEntity>
+
+    @Query("SELECT * FROM faculty WHERE name LIKE :query OR department LIKE :query")
+    fun searchFaculty(query: String): List<FacultyEntity>
 }
